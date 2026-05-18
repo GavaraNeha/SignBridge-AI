@@ -6,8 +6,8 @@
 ![Status](https://img.shields.io/badge/Status-Live-green)
 
 ## 🔗 Live Demo
-👉 [https://gleeful-trifle-007b00.netlify.app](https://gleeful-trifle-007b00.netlify.app)
-
+👉 [Live Demo - Netlify](https://gleeful-trifle-007b00.netlify.app)
+👉 [Live Demo - GitHub Pages](https://gavaraneha.github.io/SignBridge-AI)
 ---
 
 ## 🎯 Problem Statement
