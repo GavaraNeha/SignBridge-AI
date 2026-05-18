@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SignBridge AI — Sign Language Interpreter</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0f2f8;--surface:#fff;--surface2:rgba(255,255,255,0.7);
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.05);
+  --purple:#5b4fcf;--purple-l:#7c6fe0;--purple-bg:rgba(91,79,207,0.07);--purple-br:rgba(91,79,207,0.18);
+  --text:#12122a;--text2:#545475;--text3:#9090b8;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--teal:#14b8a6;
+  --shadow:0 1px 16px rgba(0,0,0,0.06);--shadow2:0 8px 40px rgba(91,79,207,0.16);
+  --r:14px;
+}
+[data-theme="dark"]{
+  --bg:#0e0e1a;--surface:#161628;--surface2:rgba(22,22,40,0.8);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.05);
+  --text:#e8e8f5;--text2:#9090b8;--text3:#5a5a88;
+  --purple-bg:rgba(91,79,207,0.18);--purple-br:rgba(91,79,207,0.35);
+  --shadow:0 1px 16px rgba(0,0,0,0.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;}
+button{font-family:'Outfit',sans-serif;cursor:pointer;}
+input,select,textarea{font-family:'Outfit',sans-serif;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;background:rgba(240,242,248,0.88);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;height:58px;transition:background .3s;}
+[data-theme="dark"] nav{background:rgba(14,14,26,0.9);}
+.nav-logo{font-weight:800;font-size:1.1rem;color:var(--text);display:flex;align-items:center;gap:.4rem;white-space:nowrap;}
+.logo-gem{font-size:1.15rem;}
+.nav-links{display:flex;gap:.1rem;}
+.nav-link{background:none;border:none;font-size:.83rem;font-weight:500;color:var(--text2);
+  padding:.38rem .85rem;border-radius:8px;transition:all .18s;display:flex;align-items:center;gap:.35rem;}
+.nav-link:hover{background:var(--purple-bg);color:var(--purple);}
+.nav-link.active{background:var(--purple-bg);color:var(--purple);font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:.6rem;}
+.xp-pill{display:flex;align-items:center;gap:.35rem;background:var(--purple-bg);
+  border:1px solid var(--purple-br);border-radius:20px;padding:.26rem .8rem;
+  font-size:.78rem;font-weight:700;color:var(--purple);}
+.btn-theme{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:.38rem .6rem;font-size:.9rem;color:var(--text2);transition:all .18s;}
+.btn-theme:hover{border-color:var(--purple-br);color:var(--purple);}
+.btn-emergency{background:#ef4444;color:#fff;border:none;border-radius:8px;
+  padding:.38rem .9rem;font-size:.78rem;font-weight:700;transition:all .18s;letter-spacing:.02em;}
+.btn-emergency:hover{background:#dc2626;box-shadow:0 4px 16px rgba(239,68,68,.3);}
+
+/* ── PAGES ── */
+.page{display:none;}.page.active{display:block;}
+
+/* ── HOME ── */
+.home-hero{max-width:1060px;margin:0 auto;padding:4.5rem 1.5rem 2.5rem;text-align:center;}
+.home-hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:900;line-height:1.08;margin-bottom:.9rem;}
+.home-hero h1 span{color:var(--purple);}
+.home-hero p{font-size:.98rem;color:var(--text2);max-width:480px;margin:0 auto 1.8rem;line-height:1.7;}
+.hero-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;}
+.btn-main{background:var(--purple);color:#fff;border:none;border-radius:10px;
+  padding:.75rem 1.8rem;font-size:.92rem;font-weight:700;transition:all .2s;}
+.btn-main:hover{background:var(--purple-l);transform:translateY(-2px);box-shadow:var(--shadow2);}
+.btn-sec{background:var(--surface);color:var(--text);border:1px solid var(--border);
+  border-radius:10px;padding:.75rem 1.8rem;font-size:.92rem;font-weight:600;transition:all .2s;}
+.btn-sec:hover{border-color:var(--purple-br);color:var(--purple);}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:.9rem;max-width:1060px;margin:2.5rem auto 0;padding:0 1.5rem 3rem;}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.3rem;box-shadow:var(--shadow);transition:all .2s;}
+.feat-card:hover{transform:translateY(-3px);border-color:var(--purple-br);box-shadow:var(--shadow2);}
+.feat-icon{font-size:1.7rem;margin-bottom:.7rem;}
+.feat-title{font-weight:700;font-size:.9rem;margin-bottom:.35rem;}
+.feat-desc{font-size:.79rem;color:var(--text2);line-height:1.55;}
+.stat-row{display:flex;gap:2rem;justify-content:center;margin-top:2.5rem;flex-wrap:wrap;}
+.stat-box{text-align:center;}
+.stat-n{font-size:1.9rem;font-weight:900;color:var(--purple);}
+.stat-l{font-size:.75rem;color:var(--text3);margin-top:.15rem;}
+
+/* ── COMMUNICATE ── */
+.comm-wrap{max-width:1220px;margin:0 auto;padding:1.2rem 1.5rem;display:grid;
+  grid-template-columns:1fr 360px;gap:1.2rem;align-items:start;}
+
+/* Camera card */
+.cam-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;box-shadow:var(--shadow);}
+.cam-topbar{display:flex;align-items:center;gap:.5rem;padding:.8rem 1.1rem;border-bottom:1px solid var(--border);}
+.mode-pill{display:flex;align-items:center;gap:.4rem;border:none;border-radius:20px;
+  padding:.3rem .85rem;font-size:.75rem;font-weight:700;transition:all .18s;}
+.mode-pill.on{background:#12122a;color:#fff;}[data-theme="dark"] .mode-pill.on{background:#e8e8f5;color:#12122a;}
+.mode-pill.off{background:var(--purple-bg);color:var(--text2);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px #ef4444;animation:blink 1.3s ease infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.cam-viewport{position:relative;background:#080814;aspect-ratio:16/10;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+#videoEl{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none;}
+#canvasEl{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none;}
+.frame-box{position:absolute;width:42%;aspect-ratio:.85;border:1.5px dashed rgba(255,255,255,.16);
+  border-radius:12px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:.6rem;pointer-events:none;}
+.frame-lbl{font-size:.58rem;color:rgba(255,255,255,.28);letter-spacing:.1em;text-transform:uppercase;font-weight:600;}
+.detect-overlay{position:absolute;top:.9rem;left:.9rem;background:var(--purple);border-radius:12px;
+  padding:.85rem 1.15rem;min-width:158px;box-shadow:0 8px 30px rgba(91,79,207,.4);display:none;}
+.detect-overlay.show{display:block;}
+.do-lbl{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:.2rem;}
+.do-sign{font-size:2.6rem;font-weight:900;color:#fff;line-height:1;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.do-bar{height:4px;background:rgba(255,255,255,.2);border-radius:2px;}
+.do-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,rgba(255,255,255,.5),#a5b4fc);transition:width .2s;}
+.do-pct{font-size:.66rem;color:rgba(255,255,255,.6);text-align:right;margin-top:.18rem;}
+.cam-ph{display:flex;flex-direction:column;align-items:center;gap:.9rem;color:rgba(255,255,255,.35);font-size:.85rem;}
+.cam-ph-ico{font-size:2.5rem;opacity:.3;}
+.btn-startcam{background:var(--purple);color:#fff;border:none;border-radius:10px;
+  padding:.65rem 1.5rem;font-size:.88rem;font-weight:700;transition:all .18s;}
+.btn-startcam:hover{background:var(--purple-l);}
+.cam-stop{position:absolute;bottom:.9rem;left:.9rem;width:36px;height:36px;border-radius:9px;
+  background:rgba(239,68,68,.85);border:none;display:none;align-items:center;justify-content:center;
+  color:#fff;font-size:.9rem;backdrop-filter:blur(8px);}
+.cam-stop.show{display:flex;}
+.cam-footer{display:flex;align-items:flex-start;gap:.6rem;padding:.8rem 1.1rem;border-top:1px solid var(--border);font-size:.79rem;color:var(--text2);}
+.cam-footer-ico{color:var(--purple);flex-shrink:0;margin-top:1px;}
+
+/* Sentence builder */
+.sentence-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1rem 1.2rem;box-shadow:var(--shadow);}
+.sb-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.55rem;}
+.sb-text{font-family:'JetBrains Mono',monospace;font-size:1.05rem;color:var(--text);
+  min-height:44px;word-break:break-all;letter-spacing:.05em;margin-bottom:.7rem;line-height:1.5;}
+.sb-text:empty::before{content:'Start signing…';color:var(--text3);font-family:'Outfit',sans-serif;font-style:italic;font-size:.88rem;letter-spacing:0;}
+.sb-actions{display:flex;gap:.5rem;flex-wrap:wrap;}
+.sb-btn{border:none;border-radius:8px;padding:.38rem .9rem;font-size:.78rem;font-weight:600;transition:all .18s;}
+.sb-btn.space{background:var(--purple-bg);color:var(--purple);}
+.sb-btn.space:hover{background:var(--purple);color:#fff;}
+.sb-btn.backspace{background:rgba(239,68,68,.1);color:#ef4444;}
+.sb-btn.backspace:hover{background:#ef4444;color:#fff;}
+.sb-btn.clear{background:rgba(0,0,0,.06);color:var(--text2);}[data-theme="dark"] .sb-btn.clear{background:rgba(255,255,255,.06);}
+.sb-btn.clear:hover{background:rgba(239,68,68,.12);color:#ef4444;}
+.sb-btn.speak{background:var(--green);color:#fff;}
+.sb-btn.speak:hover{background:#059669;}
+.sb-btn.save{background:rgba(59,130,246,.1);color:var(--blue);}
+.sb-btn.save:hover{background:var(--blue);color:#fff;}
+
+/* Right panel */
+.right-col{display:flex;flex-direction:column;gap:1rem;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+.panel-head{display:flex;align-items:center;justify-content:space-between;
+  padding:.85rem 1.1rem;border-bottom:1px solid var(--border);}
+.panel-title{font-weight:700;font-size:.87rem;display:flex;align-items:center;gap:.4rem;}
+.panel-action{background:none;border:none;font-size:.72rem;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.05em;transition:color .15s;}
+.panel-action:hover{color:var(--red);}
+.gesture-stream-body{padding:.9rem 1.1rem;min-height:160px;display:flex;flex-direction:column;}
+.gs-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.4rem;color:var(--text3);font-size:.78rem;font-style:italic;}
+.gs-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+.chip{display:flex;align-items:center;gap:.35rem;border:1px solid var(--purple-br);border-radius:20px;
+  padding:.22rem .65rem;font-size:.78rem;font-weight:700;color:var(--purple);background:var(--purple-bg);
+  animation:chipIn .18s ease;}
+@keyframes chipIn{from{opacity:0;transform:scale(.78)}to{opacity:1;transform:scale(1)}}
+.chip-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.chip-v{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;}
+.form-btn{margin:0 1.1rem 1.1rem;background:var(--purple);color:#fff;border:none;
+  width:calc(100% - 2.2rem);border-radius:10px;padding:.82rem;font-size:.9rem;font-weight:700;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.45rem;}
+.form-btn:hover{background:var(--purple-l);box-shadow:var(--shadow2);}
+.form-btn.loading{background:#a5b4fc;cursor:wait;}
+
+/* AI translation card */
+.ai-trans{background:var(--purple);border-radius:var(--r);padding:1.1rem 1.3rem;
+  display:none;position:relative;box-shadow:var(--shadow2);}
+.ai-trans.show{display:block;}
+.ai-badge{display:inline-flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.14);
+  border-radius:20px;padding:.16rem .65rem;font-size:.67rem;font-weight:700;
+  color:rgba(255,255,255,.82);margin-bottom:.7rem;text-transform:uppercase;letter-spacing:.07em;}
+.ai-sentence{font-size:.95rem;font-weight:600;color:#fff;font-style:italic;line-height:1.55;}
+.ai-close{position:absolute;top:.75rem;right:.85rem;background:rgba(255,255,255,.18);
+  border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;
+  justify-content:center;font-size:.75rem;color:#fff;}
+.ai-close:hover{background:rgba(255,255,255,.28);}
+
+/* Translation panel */
+.trans-panel{padding:.9rem 1.1rem;}
+.trans-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.55rem;}
+.trans-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.6rem;}
+.trans-lang{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;color:var(--text);}
+.trans-result{font-size:.88rem;color:var(--text);background:var(--purple-bg);border-radius:8px;
+  padding:.55rem .8rem;min-height:2.2rem;font-weight:500;border:1px solid var(--purple-br);}
+.btn-translate{background:var(--purple);color:#fff;border:none;border-radius:8px;
+  padding:.45rem 1.1rem;font-size:.78rem;font-weight:700;transition:all .18s;width:100%;}
+.btn-translate:hover{background:var(--purple-l);}
+
+/* Hand data */
+.hand-data{padding:.9rem 1.1rem;}
+.hd-row{display:flex;justify-content:space-between;font-size:.79rem;padding:.18rem 0;}
+.hd-val{font-weight:700;color:var(--purple);font-family:'JetBrains Mono',monospace;font-size:.78rem;}
+
+/* ── LEARN ── */
+.learn-wrap{max-width:1060px;margin:0 auto;padding:1.5rem;}
+.learn-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem;}
+.learn-top h2{font-size:1.6rem;font-weight:800;}
+.learn-top p{font-size:.85rem;color:var(--text2);margin-top:.25rem;}
+.cat-strip{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.cat-btn{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:.32rem .9rem;font-size:.78rem;font-weight:600;color:var(--text2);transition:all .18s;}
+.cat-btn.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+.cat-btn:hover:not(.active){border-color:var(--purple-br);color:var(--purple);}
+.lessons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;}
+.lesson-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:1.1rem;cursor:pointer;transition:all .2s;text-align:center;box-shadow:var(--shadow);position:relative;}
+.lesson-card:hover{border-color:var(--purple-br);transform:translateY(-3px);box-shadow:var(--shadow2);}
+.lesson-card.done{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04);}
+.lesson-card.done::after{content:'✓';position:absolute;top:7px;right:9px;color:var(--green);font-size:.72rem;font-weight:800;}
+.lesson-glyph{font-size:2.2rem;color:var(--purple);font-weight:900;line-height:1;margin-bottom:.4rem;font-family:'JetBrains Mono',monospace;}
+.lesson-img{width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin:0 auto .35rem;}
+.lesson-img svg{width:72px;height:72px;}
+.lesson-title{font-size:.77rem;font-weight:700;margin-bottom:.25rem;}
+.lesson-xp{font-size:.67rem;color:var(--amber);font-weight:700;}
+.lesson-diff{font-size:.6rem;border-radius:10px;padding:.1rem .45rem;background:var(--purple-bg);color:var(--purple);font-weight:600;margin-top:.2rem;display:inline-block;}
+
+/* Practice in Learn */
+.learn-cam-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.2rem;margin-bottom:1.2rem;box-shadow:var(--shadow);}
+.learn-cam-title{font-weight:700;font-size:.95rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem;}
+.learn-cam-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
+.mini-viewport{position:relative;background:#080814;border-radius:10px;aspect-ratio:4/3;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+#learnVideo{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none;}
+#learnCanvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none;}
+.learn-cam-ph{display:flex;flex-direction:column;align-items:center;gap:.7rem;color:rgba(255,255,255,.3);font-size:.8rem;}
+.btn-learn-cam{background:var(--purple);color:#fff;border:none;border-radius:8px;
+  padding:.55rem 1.2rem;font-size:.82rem;font-weight:700;margin-top:.3rem;}
+.learn-detect-box{background:var(--purple-bg);border:1px solid var(--purple-br);border-radius:10px;padding:1.2rem;
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;}
+.ldb-sign{font-size:3.5rem;font-weight:900;color:var(--purple);font-family:'JetBrains Mono',monospace;line-height:1;}
+.ldb-name{font-size:.85rem;font-weight:600;color:var(--text2);}
+.ldb-bar{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.ldb-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a5b4fc);border-radius:3px;transition:width .2s;}
+.ldb-pct{font-size:.72rem;color:var(--text3);font-weight:600;}
+.ldb-tips{font-size:.75rem;color:var(--text3);text-align:center;line-height:1.5;}
+.ldb-label{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.15rem;}
+.ldb-fbk-btn{flex:1;border:none;border-radius:8px;padding:.42rem .5rem;font-size:.76rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .18s;}
+.ldb-fbk-btn.red{background:rgba(239,68,68,.1);color:#ef4444;}
+.ldb-fbk-btn.red:hover{background:#ef4444;color:#fff;}
+.ldb-fbk-btn.green{background:rgba(16,185,129,.1);color:var(--green);}
+.ldb-fbk-btn.green:hover{background:var(--green);color:#fff;}
+.correction-grid{display:flex;flex-wrap:wrap;gap:.3rem;}
+.corr-btn{background:var(--purple-bg);border:1px solid var(--purple-br);color:var(--purple);border-radius:6px;padding:.28rem .45rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .15s;}
+.corr-btn:hover{background:var(--purple);color:#fff;}
+.corr-btn.trained{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:var(--green);}
+.train-stats-box{margin-top:.8rem;padding:.65rem .75rem;background:var(--purple-bg);border-radius:9px;border:1px solid var(--purple-br);width:100%;}
+.train-stats-title{font-size:.68rem;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;}
+.train-reset-btn{margin-top:.5rem;width:100%;background:none;border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:6px;padding:.3rem;font-size:.7rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;}
+.train-reset-btn:hover{background:#ef4444;color:#fff;}
+
+/* ── HISTORY ── */
+.history-wrap{max-width:900px;margin:0 auto;padding:1.5rem;}
+.history-wrap h2{font-size:1.6rem;font-weight:800;margin-bottom:.3rem;}
+.history-wrap>p{color:var(--text2);font-size:.85rem;margin-bottom:1.3rem;}
+.history-toolbar{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;}
+.btn-export{background:var(--green);color:#fff;border:none;border-radius:8px;
+  padding:.45rem 1.1rem;font-size:.78rem;font-weight:700;transition:all .18s;}
+.btn-export:hover{background:#059669;}
+.btn-clear-hist{background:rgba(239,68,68,.1);color:#ef4444;border:none;border-radius:8px;
+  padding:.45rem 1.1rem;font-size:.78rem;font-weight:700;transition:all .18s;}
+.btn-clear-hist:hover{background:#ef4444;color:#fff;}
+.history-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+.ht-head{display:grid;grid-template-columns:1fr 2fr 1fr 80px;gap:0;background:var(--purple-bg);border-bottom:1px solid var(--border);}
+.ht-hcell{padding:.65rem 1rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);}
+.ht-row{display:grid;grid-template-columns:1fr 2fr 1fr 80px;gap:0;border-bottom:1px solid var(--border2);transition:background .15s;}
+.ht-row:hover{background:var(--purple-bg);}
+.ht-row:last-child{border-bottom:none;}
+.ht-cell{padding:.65rem 1rem;font-size:.82rem;color:var(--text2);}
+.ht-cell.sign{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--purple);font-size:.9rem;}
+.ht-cell.speak-btn button{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br);
+  border-radius:6px;padding:.22rem .55rem;font-size:.7rem;font-weight:600;transition:all .15s;}
+.ht-cell.speak-btn button:hover{background:var(--purple);color:#fff;}
+.history-empty{text-align:center;padding:3rem;color:var(--text3);font-size:.85rem;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(12,12,26,.42);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:1.8rem;max-width:430px;width:100%;box-shadow:0 24px 80px rgba(91,79,207,.18);
+  transform:translateY(14px) scale(.97);transition:transform .2s;}
+.modal-overlay.open .modal{transform:translateY(0) scale(1);}
+.modal-glyph{font-size:4rem;font-weight:900;color:var(--purple);text-align:center;margin-bottom:.3rem;font-family:'JetBrains Mono',monospace;display:flex;justify-content:center;align-items:center;}
+.modal-title{font-size:1.3rem;font-weight:800;text-align:center;margin-bottom:.35rem;}
+.modal-desc{color:var(--text2);font-size:.83rem;text-align:center;margin-bottom:1.2rem;line-height:1.6;}
+.modal-steps{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.3rem;}
+.modal-step{display:flex;align-items:center;gap:.7rem;background:var(--bg);border-radius:9px;padding:.58rem .85rem;font-size:.83rem;}
+.step-n{background:var(--purple);color:#fff;width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;}
+.modal-acts{display:flex;gap:.7rem;}
+.btn-done{flex:1;background:var(--purple);color:#fff;border:none;border-radius:9px;padding:.7rem;
+  font-size:.87rem;font-weight:700;transition:all .18s;}
+.btn-done:hover{background:var(--purple-l);}
+.btn-mclose{flex:1;background:none;border:1px solid var(--border);color:var(--text2);
+  border-radius:9px;padding:.7rem;font-size:.87rem;font-weight:600;transition:all .18s;}
+.btn-mclose:hover{border-color:var(--purple-br);color:var(--purple);}
+
+/* ── EMERGENCY MODAL ── */
+.emergency-modal{max-width:520px;}
+.emerg-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.3rem;}
+.emerg-btn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444;
+  border-radius:10px;padding:.9rem;font-weight:700;font-size:.88rem;transition:all .18s;text-align:center;}
+.emerg-btn:hover{background:#ef4444;color:#fff;transform:scale(1.02);}
+.emerg-btn .emerg-ico{font-size:1.5rem;display:block;margin-bottom:.3rem;}
+
+/* ── ABOUT ── */
+.about-wrap{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem;}
+.about-wrap h2{font-size:1.6rem;font-weight:800;margin-bottom:.4rem;}
+.about-wrap>p{color:var(--text2);line-height:1.7;max-width:540px;margin-bottom:1.8rem;}
+.slbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.8rem;margin-top:1.8rem;}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.9rem;}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;text-align:center;box-shadow:var(--shadow);}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;margin:0 auto .7rem;}
+.team-name{font-weight:700;font-size:.86rem;}
+.tech-row{display:flex;flex-wrap:wrap;gap:.4rem;}
+.tech-tag{background:var(--purple-bg);border:1px solid var(--purple-br);border-radius:6px;padding:.24rem .7rem;font-size:.75rem;color:var(--purple);font-weight:600;}
+
+/* Toast */
+.toast{position:fixed;bottom:1.8rem;right:1.8rem;z-index:999;background:var(--green);color:#fff;
+  border-radius:10px;padding:.68rem 1.2rem;font-size:.84rem;font-weight:600;
+  box-shadow:0 8px 28px rgba(16,185,129,.28);transform:translateY(80px);opacity:0;
+  transition:all .3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{background:#ef4444;}
+.toast.info{background:var(--blue);}
+
+@media(max-width:860px){.comm-wrap{grid-template-columns:1fr;}.learn-cam-row{grid-template-columns:1fr;}}
+@media(max-width:600px){.nav-links .nav-link span{display:none;}.ht-head,.ht-row{grid-template-columns:80px 1fr 80px;}.ht-hcell:nth-child(3),.ht-cell:nth-child(3){display:none;}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span class="logo-gem">◈</span> SignBridge AI</div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="nav('home')">🏠 <span>Home</span></button>
+    <button class="nav-link" onclick="nav('communicate')">💬 <span>Communicate</span></button>
+    <button class="nav-link" onclick="nav('learn')">📖 <span>Learn</span></button>
+    <button class="nav-link" onclick="nav('history')">📋 <span>History</span></button>
+    <button class="nav-link" onclick="nav('about')">◈ <span>About</span></button>
+  </div>
+  <div class="nav-right">
+    <div class="xp-pill">⚡ <span id="xpDisplay">0 XP</span></div>
+    <button class="btn-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="btn-emergency" onclick="openEmergency()">🚨 SOS</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="home-hero">
+    <h1>AI-Powered<br/><span>Sign Language</span><br/>Interpreter</h1>
+    <p>Real-time ASL recognition → Text → Speech. Fully browser-based, no install required.</p>
+    <div class="hero-btns">
+      <button class="btn-main" onclick="nav('communicate')">▶ Start Now</button>
+      <button class="btn-sec" onclick="nav('learn')">📖 Learn Signs</button>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-n">26</div><div class="stat-l">ASL Letters</div></div>
+      <div class="stat-box"><div class="stat-n">97+</div><div class="stat-l">Lessons</div></div>
+      <div class="stat-box"><div class="stat-n">~95%</div><div class="stat-l">Accuracy</div></div>
+      <div class="stat-box"><div class="stat-n">14</div><div class="stat-l">Features</div></div>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feat-card"><div class="feat-icon">🖐️</div><div class="feat-title">21-Point Tracking</div><div class="feat-desc">MediaPipe detects all hand landmarks at 30fps.</div></div>
+    <div class="feat-card"><div class="feat-icon">🔤</div><div class="feat-title">A–Z + Numbers</div><div class="feat-desc">Full ASL alphabet, 0–9, and common words.</div></div>
+    <div class="feat-card"><div class="feat-icon">🔊</div><div class="feat-title">Text to Speech</div><div class="feat-desc">Speak recognized signs aloud via Web Speech API.</div></div>
+    <div class="feat-card"><div class="feat-icon">🧩</div><div class="feat-title">Sentence Builder</div><div class="feat-desc">Form full sentences from individual signs.</div></div>
+    <div class="feat-card"><div class="feat-icon">🌐</div><div class="feat-title">Multi-Language</div><div class="feat-desc">Translate to Telugu, Hindi, Spanish and more.</div></div>
+    <div class="feat-card"><div class="feat-icon">📋</div><div class="feat-title">Save History</div><div class="feat-desc">Export session log to CSV with timestamps.</div></div>
+    <div class="feat-card"><div class="feat-icon">🌙</div><div class="feat-title">Dark / Light Mode</div><div class="feat-desc">Switch between themes instantly.</div></div>
+    <div class="feat-card"><div class="feat-icon">🚨</div><div class="feat-title">Emergency SOS</div><div class="feat-desc">One-tap predefined emergency voice alerts.</div></div>
+  </div>
+</div>
+
+<!-- COMMUNICATE -->
+<div id="page-communicate" class="page">
+  <div class="comm-wrap">
+    <!-- Left: camera + sentence -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="cam-card">
+        <div class="cam-topbar">
+          <button class="mode-pill on" id="btnLive">
+            <div class="live-dot"></div> Live Analysis
+          </button>
+          <button class="mode-pill off" id="btnTrain" onclick="setMode('train')">🎓 Training Mode</button>
+        </div>
+        <div class="cam-viewport">
+          <video id="videoEl" autoplay muted playsinline></video>
+          <canvas id="canvasEl"></canvas>
+          <div class="frame-box"><div class="frame-lbl">Keep hand within this frame</div></div>
+          <div class="detect-overlay" id="detectOverlay">
+            <div class="do-lbl">Detected Sign</div>
+            <div class="do-sign" id="doSign">—</div>
+            <div class="do-bar"><div class="do-fill" id="doFill" style="width:0%"></div></div>
+            <div class="do-pct" id="doPct">0%</div>
+          </div>
+          <div class="cam-ph" id="camPH">
+            <div class="cam-ph-ico">📷</div>
+            <p style="color:rgba(255,255,255,.32)">Camera not started</p>
+            <button class="btn-startcam" onclick="startCam()">Start Camera</button>
+          </div>
+          <button class="cam-stop" id="stopBtn" onclick="stopCam()">🗑</button>
+        </div>
+        <div class="cam-footer">
+          <span class="cam-footer-ico">ⓘ</span>
+          Maintain good lighting. Keep hand centred in the dashed frame. Signs are detected after ~1 second of holding.
+        </div>
+      </div>
+
+      <!-- Sentence builder -->
+      <div class="sentence-bar">
+        <div class="sb-label">Sentence Builder</div>
+        <div class="sb-text" id="sbText"></div>
+        <div class="sb-actions">
+          <button class="sb-btn space" onclick="sbSpace()">⎵ Space</button>
+          <button class="sb-btn backspace" onclick="sbBack()">⌫ Delete</button>
+          <button class="sb-btn clear" onclick="sbClear()">✕ Clear</button>
+          <button class="sb-btn speak" onclick="speakSentence()">🔊 Speak</button>
+          <button class="sb-btn save" onclick="saveSentence()">💾 Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right col -->
+    <div class="right-col">
+      <!-- Gesture stream -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">◈ Gesture Stream</div>
+          <button class="panel-action" onclick="clearStream()">Clear All</button>
+        </div>
+        <div class="gesture-stream-body">
+          <div class="gs-empty" id="gsEmpty"><span style="font-size:1.6rem;opacity:.3">⊡</span>No gestures recognized yet…</div>
+          <div class="gs-chips" id="gsChips" style="display:none"></div>
+        </div>
+        <button class="form-btn" id="formBtn" onclick="formSentence()">◈ Form Sentence with AI</button>
+      </div>
+
+      <!-- AI translation -->
+      <div class="ai-trans" id="aiTrans">
+        <div class="ai-badge">✦ AI Translation</div>
+        <div class="ai-sentence" id="aiSentence"></div>
+        <button class="ai-close" onclick="closeAI()">✕</button>
+      </div>
+
+      <!-- Translation -->
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">🌐 Translate</div></div>
+        <div class="trans-panel">
+          <div class="trans-label">Translate sentence to</div>
+          <div class="trans-grid">
+            <select id="transLang" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem .7rem;font-size:.8rem;color:var(--text);grid-column:span 2;">
+              <option value="te">Telugu (తెలుగు)</option>
+              <option value="hi">Hindi (हिंदी)</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="ar">Arabic</option>
+              <option value="zh">Chinese</option>
+              <option value="ta">Tamil</option>
+              <option value="kn">Kannada</option>
+            </select>
+          </div>
+          <div class="trans-result" id="transResult" style="margin-bottom:.6rem;">—</div>
+          <button class="btn-translate" onclick="translateText()">Translate ↗</button>
+        </div>
+      </div>
+
+      <!-- Hand data -->
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">🖐 Hand Data</div></div>
+        <div class="hand-data">
+          <div class="hd-row"><span style="color:var(--text2)">Hands detected</span><span class="hd-val" id="hCount">0</span></div>
+          <div class="hd-row"><span style="color:var(--text2)">Dominant hand</span><span class="hd-val" id="hDom">—</span></div>
+          <div class="hd-row"><span style="color:var(--text2)">Fingers extended</span><span class="hd-val" id="hFing">—</span></div>
+          <div class="hd-row"><span style="color:var(--text2)">Confidence</span><span class="hd-val" id="hConf">—</span></div>
+          <div class="hd-row"><span style="color:var(--text2)">Frame rate</span><span class="hd-val" id="hFPS">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div id="page-learn" class="page">
+  <div class="learn-wrap">
+    <div class="learn-top">
+      <div>
+        <h2>Learn Sign Language</h2>
+        <p>Practise with your live camera. Earn XP for each completed lesson.</p>
+      </div>
+    </div>
+
+    <!-- Live practice cam in Learn -->
+    <div class="learn-cam-section">
+      <div class="learn-cam-title">📷 Live Practice Camera</div>
+      <div class="learn-cam-row">
+        <div>
+          <div class="mini-viewport">
+            <video id="learnVideo" autoplay muted playsinline></video>
+            <canvas id="learnCanvas"></canvas>
+            <div class="learn-cam-ph" id="learnCamPH">
+              <div style="font-size:2rem;opacity:.3">📷</div>
+              <p>Camera off</p>
+              <button class="btn-learn-cam" onclick="startLearnCam()">Enable Camera</button>
+            </div>
+            <button class="cam-stop" id="learnStopBtn" onclick="stopLearnCam()" style="display:none;flex;">⏹</button>
+          </div>
+        </div>
+        <div class="learn-detect-box">
+          <div class="ldb-label">Detected Sign</div>
+          <div class="ldb-sign" id="ldbSign">—</div>
+          <div class="ldb-name" id="ldbName">Show a sign to the camera</div>
+          <div class="ldb-bar"><div class="ldb-fill" id="ldbFill" style="width:0%"></div></div>
+          <div class="ldb-pct" id="ldbPct">0%</div>
+          <div id="correctionPanel" style="display:none;width:100%;margin-top:.8rem;">
+            <div style="font-size:.72rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;">✗ Wrong? Tap the correct letter:</div>
+            <div class="correction-grid" id="correctionGrid"></div>
+            <div style="font-size:.68rem;color:var(--text3);margin-top:.4rem;text-align:center;">Corrections saved &amp; used to improve detection</div>
+          </div>
+          <div style="display:flex;gap:.5rem;margin-top:.7rem;width:100%;">
+            <button class="ldb-fbk-btn red" id="btnWrong" onclick="showCorrection()" style="display:none;">✗ Wrong? Fix it</button>
+            <button class="ldb-fbk-btn green" id="btnCorrect" onclick="confirmCorrect()" style="display:none;">✓ Correct!</button>
+          </div>
+          <div class="ldb-tips" style="margin-top:.6rem;">💡 Hold sign steady 1–2s · Face palm to camera</div>
+          <div class="train-stats-box">
+            <div class="train-stats-title">📊 My Training Data</div>
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;"><span style="color:var(--text2)">Corrections saved</span><span style="font-weight:700;color:var(--purple)" id="corrCount">0</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-top:.2rem;"><span style="color:var(--text2)">Letters trained</span><span style="font-weight:700;color:var(--purple)" id="trainedLetters">—</span></div>
+            <button onclick="clearTraining()" class="train-reset-btn">Reset Training Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat-strip" id="catStrip"></div>
+    <div class="lessons-grid" id="lessonsGrid"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="page-history" class="page">
+  <div class="history-wrap">
+    <h2>Conversation History</h2>
+    <p>All recognized signs and formed sentences saved with timestamps.</p>
+    <div class="history-toolbar">
+      <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn-clear-hist" onclick="clearHistory()">✕ Clear All</button>
+    </div>
+    <div class="history-table" id="historyTable">
+      <div class="ht-head">
+        <div class="ht-hcell">Sign/Text</div>
+        <div class="ht-hcell">Sentence</div>
+        <div class="ht-hcell">Time</div>
+        <div class="ht-hcell">Action</div>
+      </div>
+      <div class="history-empty" id="histEmpty">No history yet. Start signing in Communicate!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="page-about" class="page">
+  <div class="about-wrap">
+    <h2>About SignBridge AI</h2>
+    <p>A browser-native AI-powered sign language interpreter — built to make communication barrier-free for the deaf and hard-of-hearing community.</p>
+    <div class="slbl">Team SignBridge</div>
+    <div class="team-grid">
+      <div class="team-card"><div class="avatar">GN</div><div class="team-name">Gavara Neha</div></div>
+      <div class="team-card"><div class="avatar">GI</div><div class="team-name">Gundu Iswarya Lakshmi</div></div>
+      <div class="team-card"><div class="avatar">GP</div><div class="team-name">Ganesam Parthasaradhi Reddy</div></div>
+      <div class="team-card"><div class="avatar" style="background:var(--purple-l)">VN</div><div class="team-name">Vanka Namratha Amanigreeva</div></div>
+    </div>
+    <div class="slbl">Tech Stack</div>
+    <div class="tech-row">
+      <span class="tech-tag">MediaPipe Hands</span><span class="tech-tag">TensorFlow.js</span>
+      <span class="tech-tag">Web Speech API</span><span class="tech-tag">MyMemory Translation</span>
+      <span class="tech-tag">React 18</span><span class="tech-tag">TypeScript</span>
+      <span class="tech-tag">Vite</span><span class="tech-tag">Tailwind CSS</span>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-glyph" id="mGlyph"></div>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-desc" id="mDesc"></div>
+    <div class="modal-steps" id="mSteps"></div>
+    <div class="modal-acts">
+      <button class="btn-done" onclick="completeLesson()">✓ Complete (+<span id="mXp"></span> XP)</button>
+      <button class="btn-mclose" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMERGENCY MODAL -->
+<div class="modal-overlay" id="emergModal" onclick="closeEmerg(event)">
+  <div class="modal emergency-modal">
+    <div class="modal-title" style="margin-bottom:1rem;">🚨 Emergency SOS</div>
+    <div class="emerg-grid">
+      <button class="emerg-btn" onclick="emergSpeak('Help me I need assistance immediately')"><span class="emerg-ico">🆘</span>Need Help</button>
+      <button class="emerg-btn" onclick="emergSpeak('Call an ambulance now, this is a medical emergency')"><span class="emerg-ico">🏥</span>Medical</button>
+      <button class="emerg-btn" onclick="emergSpeak('Call the police, I am in danger')"><span class="emerg-ico">👮</span>Call Police</button>
+      <button class="emerg-btn" onclick="emergSpeak('I am having a fire emergency, call the fire department')"><span class="emerg-ico">🔥</span>Fire</button>
+      <button class="emerg-btn" onclick="emergSpeak('I cannot breathe, I need oxygen help immediately')"><span class="emerg-ico">💨</span>Can't Breathe</button>
+      <button class="emerg-btn" onclick="emergSpeak('I am lost, please help me find my way')"><span class="emerg-ico">📍</span>I am Lost</button>
+    </div>
+    <button class="btn-mclose" style="width:100%;padding:.7rem;border-radius:10px;" onclick="closeEmerg()">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let xp = parseInt(localStorage.getItem('sb_xp')||'0');
+let doneLessons = JSON.parse(localStorage.getItem('sb_done')||'[]');
+let historyLog = JSON.parse(localStorage.getItem('sb_hist')||'[]');
+let isDark = localStorage.getItem('sb_theme')==='dark';
+let curLesson = null, activeCat = 'All';
+
+// Camera state - communicate
+let commHands=null, commCamera=null;
+let commBuf=[], lastStable='', sentence='', gestHistory=[];
+let lastT=Date.now();
+const BUF=14;
+
+// Camera state - learn
+let learnHands=null, learnCamera=null;
+
+if(isDark) document.documentElement.setAttribute('data-theme','dark');
+document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+
+// ═══════════════════════════════════════
+// LESSONS
+// ═══════════════════════════════════════
+const STEPS = {
+  A:['Make a fist','Tuck thumb beside index finger'],
+  B:['Extend all 4 fingers together','Fold thumb across palm'],
+  C:['Curve fingers + thumb into a C shape'],
+  D:['Touch index fingertip to thumb','Other 3 fingers point up'],
+  E:['Curl all fingers like a claw','Thumb tucked under'],
+  F:['Touch index + thumb (OK sign)','Other 3 fingers up'],
+  G:['Index points sideways','Thumb points same way'],
+  H:['Index + middle together, pointing sideways'],
+  I:['Pinky only extended','All others curled'],
+  J:['Pinky up','Trace a J shape in the air'],
+  K:['Index + middle in V','Thumb between them'],
+  L:['Index points up','Thumb points out — L shape'],
+  M:['3 fingers folded over thumb','Knuckles visible'],
+  N:['2 fingers folded over thumb'],
+  O:['All fingers curved to thumb — O shape'],
+  P:['Like K but angled downward'],
+  Q:['Like G but pointing down'],
+  R:['Cross index over middle finger'],
+  S:['Fist with thumb over fingers'],
+  T:['Thumb between index + middle'],
+  U:['Index + middle extended together upward'],
+  V:['Index + middle in V — peace sign'],
+  W:['Index, middle, ring spread wide up'],
+  X:['Curl index finger into a hook'],
+  Y:['Thumb + pinky out, others curled'],
+  Z:['Trace Z shape with index finger in air'],
+};
+
+const LESSONS = [
+  ...Array.from({length:26},(_,i)=>{
+    const L=String.fromCharCode(65+i);
+    return{id:`a-${L}`,category:'Alphabet',title:`Letter ${L}`,sign:L,
+      description:`Form the letter ${L} in ASL fingerspelling.`,
+      steps:STEPS[L]||['Position hand','Form the shape','Hold steady 2s'],
+      difficulty:i<9?'Beginner':i<18?'Intermediate':'Advanced',xp:10};
+  }),
+  ...Array.from({length:10},(_,i)=>({id:`n-${i}`,category:'Numbers',title:`Number ${i}`,sign:String(i),
+    description:`Show the number ${i} in ASL.`,
+    steps:[i===0?'Make an O shape':`Hold up ${i} finger(s) clearly`,'Palm facing outward toward camera'],
+    difficulty:'Beginner',xp:15})),
+  {id:'w-hello',category:'Common Words',title:'Hello',sign:'👋',description:'Salute from forehead outward.',steps:['Hand near temple','Arc hand outward in salute'],difficulty:'Beginner',xp:20},
+  {id:'w-ty',category:'Common Words',title:'Thank You',sign:'🙏',description:'Flat hand from chin forward.',steps:['Touch chin with flat fingertips','Move hand forward and out'],difficulty:'Beginner',xp:20},
+  {id:'w-please',category:'Common Words',title:'Please',sign:'🫶',description:'Flat hand on chest, circular motion.',steps:['Flat hand on chest','Move clockwise in a circle'],difficulty:'Beginner',xp:20},
+  {id:'w-sorry',category:'Common Words',title:'Sorry',sign:'✊',description:'Fist on chest, circular motion.',steps:['Fist on chest','Move slowly in a circle'],difficulty:'Beginner',xp:20},
+  {id:'w-yes',category:'Common Words',title:'Yes',sign:'✊',description:'Nodding fist up and down.',steps:['Make a fist','Nod up and down like a head nod'],difficulty:'Beginner',xp:20},
+  {id:'w-no',category:'Common Words',title:'No',sign:'✌️',description:'Index + middle snap to thumb.',steps:['Extend index + middle','Snap both down to tap thumb'],difficulty:'Beginner',xp:20},
+  {id:'w-ily',category:'Common Words',title:'I Love You',sign:'🤟',description:'ILY handshape.',steps:['Extend pinky, index and thumb','Hold up, facing outward'],difficulty:'Beginner',xp:25},
+  {id:'g-gm',category:'Greetings',title:'Good Morning',sign:'🌅',description:'Good + Morning combined.',steps:['Sign Good: chin forward','Sign Morning: forearm rising like sun'],difficulty:'Intermediate',xp:40},
+  {id:'g-gn',category:'Greetings',title:'Good Night',sign:'🌙',description:'Good + Night combined.',steps:['Sign Good: chin forward','Sign Night: bent hand arcs down'],difficulty:'Intermediate',xp:40},
+  {id:'g-bye',category:'Greetings',title:'Goodbye',sign:'👋',description:'Open palm wave.',steps:['Open palm facing out','Wave side to side'],difficulty:'Beginner',xp:10},
+  {id:'c-how',category:'Conversation',title:'How are you?',sign:'🔄',description:'Roll hands + point.',steps:['Backs of both hands together','Roll forward','Point at the person'],difficulty:'Intermediate',xp:45},
+  {id:'c-und',category:'Conversation',title:'I Understand',sign:'💡',description:'Index flicks up near forehead.',steps:['Make a fist near forehead','Flick index finger upward'],difficulty:'Beginner',xp:25},
+  {id:'c-name',category:'Conversation',title:'My Name Is',sign:'🪪',description:'My + Name + fingerspell.',steps:['Flat hand on chest (My)','H-hand tap twice (Name)','Fingerspell your name'],difficulty:'Intermediate',xp:50},
+  {id:'d-hng',category:'Daily Phrases',title:"I'm Hungry",sign:'😋',description:'C-hand slides down chest.',steps:['Form C handshape','Slide from upper to lower chest'],difficulty:'Beginner',xp:25},
+  {id:'d-hlp',category:'Daily Phrases',title:'Help',sign:'👍',description:'Thumb-up fist on palm, lift.',steps:['Left palm flat facing up','Thumb-up fist on top','Lift both hands together'],difficulty:'Beginner',xp:25},
+  {id:'d-stp',category:'Daily Phrases',title:'Stop',sign:'✋',description:'Chop hand into open palm.',steps:['Left palm flat facing up','Right hand chops down sharply'],difficulty:'Beginner',xp:15},
+  {id:'d-wtr',category:'Daily Phrases',title:'Water',sign:'💧',description:'W then tap chin.',steps:['Form W handshape','Tap chin with index knuckle twice'],difficulty:'Beginner',xp:20},
+];
+const CATS=['All','Alphabet','Numbers','Common Words','Greetings','Conversation','Daily Phrases'];
+
+// ═══════════════════════════════════════
+// GESTURE CLASSIFIER v2 — Accurate
+// Based on official ASL alphabet chart
+// MediaPipe landmark indices:
+//  Wrist=0, Thumb: 1-4, Index: 5-8
+//  Middle: 9-12, Ring: 13-16, Pinky: 17-20
+// ═══════════════════════════════════════
+function classify(lm){
+  if(!lm||lm.length<21)return null;
+
+  // ── helpers ──
+  const dist=(a,b)=>Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2+(a.z-b.z)**2);
+  const wrist=lm[0];
+  const palmSize=dist(wrist,lm[9]); // wrist to middle MCP — normalises scale
+
+  // Finger extended: tip clearly above PIP (in image-y, lower y = higher on screen)
+  const fingerExt=(tip,pip,mcp)=>(lm[pip].y - lm[tip].y) > palmSize*0.12;
+  // Finger curled: tip below PIP significantly
+  const fingerCurl=(tip,pip)=>(lm[tip].y - lm[pip].y) > palmSize*0.05;
+  // Finger half-bent: between ext and curl
+  const fingerBent=(tip,pip,mcp)=>{
+    const diff=lm[pip].y-lm[tip].y;
+    return diff>-palmSize*0.05&&diff<palmSize*0.12;
+  };
+
+  const iExt=fingerExt(8,6,5),  iCurl=fingerCurl(8,6);
+  const mExt=fingerExt(12,10,9),mCurl=fingerCurl(12,10);
+  const rExt=fingerExt(16,14,13),rCurl=fingerCurl(16,14);
+  const pExt=fingerExt(20,18,17),pCurl=fingerCurl(20,18);
+
+  // Thumb: extended if tip is far from index MCP laterally
+  const thumbTip=lm[4], thumbIP=lm[3], thumbMCP=lm[2];
+  const thumbExt=dist(thumbTip,lm[5])>palmSize*0.55; // tip far from index MCP
+  const thumbUp=thumbTip.y < thumbIP.y; // thumb pointing up
+  // Thumb across palm (tucked): tip near palm center (lm[9])
+  const thumbTucked=dist(thumbTip,lm[9])<palmSize*0.65;
+
+  // Useful distances (normalised)
+  const normDist=(a,b)=>dist(lm[a],lm[b])/palmSize;
+  const tipsDist_IM=normDist(8,12); // index-middle tip distance
+  const tipsDist_MR=normDist(12,16);
+  const tipsDist_RP=normDist(16,20);
+  const thumbIndexTip=normDist(4,8);
+  const thumbMiddleTip=normDist(4,12);
+
+  // Lateral spread (x-axis spread of fingers)
+  const spreadX=Math.abs(lm[8].x-lm[20].x)/palmSize;
+
+  // All 4 fingers curled
+  const allCurl=iCurl&&mCurl&&rCurl&&pCurl;
+  // All 4 fingers extended
+  const allExt=iExt&&mExt&&rExt&&pExt;
+
+  // ── SCORING — try each letter, return best score ──
+  const scores={};
+
+  // A: fist, thumb rests beside index MCP (not tucked under, not fully extended)
+  // Fingers all curled, thumb to the side
+  if(allCurl&&!thumbExt&&!thumbTucked) scores.A=0.82;
+  else if(allCurl&&thumbTucked) scores.S=0.80; // S is like A but thumb OVER fingers
+
+  // B: all 4 fingers straight up, thumb tucked across palm
+  if(allExt&&thumbTucked) scores.B=0.85;
+
+  // C: all fingers curved (neither fully extended nor fully curled), round C shape
+  // None fully extended, none fully curled, moderate curl
+  if(!iExt&&!mExt&&!rExt&&!pExt&&!iCurl&&!mCurl&&!rCurl&&thumbExt&&thumbIndexTip>0.6&&thumbIndexTip<1.2)
+    scores.C=0.78;
+
+  // D: index up, middle+ring+pinky curl down touching thumb which forms circle with them
+  if(iExt&&!mExt&&!rExt&&!pExt&&thumbIndexTip<0.45&&mCurl&&rCurl)
+    scores.D=0.80;
+
+  // E: all fingers curled down (bent at knuckles), thumb tucked under curled fingers
+  // Tips of fingers point toward palm
+  if(!iExt&&!mExt&&!rExt&&!pExt&&iCurl&&mCurl&&rCurl&&pCurl&&thumbTucked)
+    scores.E=0.76;
+
+  // F: index+thumb form circle (OK), other 3 fingers extended up
+  // Index tip near thumb tip, middle+ring+pinky up
+  if(thumbIndexTip<0.38&&!iExt&&mExt&&rExt&&pExt) scores.F=0.81;
+
+  // G: index points horizontally (sideways), thumb parallel — gun shape sideways
+  // Index extended, all others curled, hand rotated so index is roughly horizontal
+  {
+    const indexHoriz=Math.abs(lm[8].x-lm[5].x)>palmSize*0.25&&Math.abs(lm[8].y-lm[5].y)<palmSize*0.25;
+    if(iExt&&!mExt&&!rExt&&!pExt&&indexHoriz&&thumbExt) scores.G=0.76;
+  }
+
+  // H: index + middle extended together horizontally, ring+pinky curled
+  {
+    const bothHoriz=Math.abs(lm[8].y-lm[12].y)<palmSize*0.12&&iExt&&mExt;
+    if(bothHoriz&&!rExt&&!pExt) scores.H=0.78;
+  }
+
+  // I: only pinky extended up, all others curled
+  if(!iExt&&!mExt&&!rExt&&pExt&&allCurl===false&&iCurl&&mCurl&&rCurl&&!thumbExt)
+    scores.I=0.84;
+
+  // K: index + middle extended in V with thumb between them (touching middle side)
+  if(iExt&&mExt&&!rExt&&!pExt&&thumbExt&&thumbIndexTip>0.4&&thumbMiddleTip<0.6)
+    scores.K=0.74;
+
+  // L: index points straight up, thumb points out to side — L shape
+  if(iExt&&!mExt&&!rExt&&!pExt&&thumbExt&&thumbUp&&!thumbTucked&&thumbIndexTip>0.55)
+    scores.L=0.85;
+
+  // M: three fingers (index/middle/ring) folded over thumb
+  // Index+middle+ring curled, pinky curled, thumb under
+  if(iCurl&&mCurl&&rCurl&&pCurl&&thumbTucked&&normDist(4,6)<0.5) scores.M=0.74;
+
+  // N: two fingers (index/middle) folded over thumb
+  if(iCurl&&mCurl&&!rCurl&&pCurl&&thumbTucked&&normDist(4,6)<0.55) scores.N=0.72;
+
+  // O: all fingertips meet thumb tip forming circle
+  if(thumbIndexTip<0.38&&thumbMiddleTip<0.5&&!iExt&&!mExt&&!rExt&&!pExt&&!thumbTucked)
+    scores.O=0.78;
+
+  // P: like K but pointing downward (hand inverted)
+  // Index+middle down, thumb out
+  {
+    const indexDown=lm[8].y>lm[5].y+palmSize*0.1;
+    if(iExt&&mExt&&!rExt&&!pExt&&thumbExt&&indexDown) scores.P=0.70;
+  }
+
+  // Q: like G but pointing down
+  {
+    const indexDown=lm[8].y>lm[5].y;
+    if(iExt&&!mExt&&!rExt&&!pExt&&thumbExt&&indexDown) scores.Q=0.70;
+  }
+
+  // R: index + middle crossed (close together, index over middle)
+  if(iExt&&mExt&&!rExt&&!pExt&&!thumbExt&&tipsDist_IM<0.22)
+    scores.R=0.74;
+
+  // S: fist with thumb OVER/across the fingers (thumb on top of curled fingers)
+  // allCurl + thumb across (tip near index/middle proximal region)
+  if(allCurl&&!thumbExt&&normDist(4,6)<0.55&&normDist(4,7)<0.6)
+    scores.S=0.76;
+
+  // T: thumb inserted between index and middle (index curled, thumb tip between)
+  if(iCurl&&mCurl&&rCurl&&pCurl&&thumbExt&&normDist(4,7)<0.5)
+    scores.T=0.72;
+
+  // U: index + middle extended together (close, parallel), ring+pinky curled
+  if(iExt&&mExt&&!rExt&&!pExt&&!thumbExt&&tipsDist_IM<0.30)
+    scores.U=0.80;
+
+  // V: index + middle extended spread apart (V shape / peace sign)
+  if(iExt&&mExt&&!rExt&&!pExt&&!thumbExt&&tipsDist_IM>0.30)
+    scores.V=0.83;
+
+  // W: index + middle + ring extended spread, pinky curled, thumb tucked
+  if(iExt&&mExt&&rExt&&!pExt&&!thumbExt&&spreadX>0.5)
+    scores.W=0.80;
+
+  // X: index finger bent/hooked (partially curled), others curled
+  {
+    const indexHooked=fingerBent(8,6,5)&&!iExt&&!iCurl;
+    if(indexHooked&&mCurl&&rCurl&&pCurl) scores.X=0.72;
+  }
+
+  // Y: thumb + pinky extended outward, others curled — hang loose / shaka
+  if(!iExt&&!mExt&&!rExt&&pExt&&thumbExt&&iCurl&&mCurl&&rCurl)
+    scores.Y=0.85;
+
+  // Z: only index extended (like pointing), drawn in air — treat as D variant with movement hint
+  // Static: index up, others curled (similar to D but without thumb circle)
+  // We'll detect Z as index only up, no thumb contact
+  if(iExt&&!mExt&&!rExt&&!pExt&&!thumbExt&&thumbIndexTip>0.5&&iCurl===false)
+    scores.Z=0.68;
+
+  // ── Remove conflicting lower scores ──
+  // A vs S: differentiate by thumb position
+  if(scores.A&&scores.S){
+    if(thumbTucked) delete scores.A; else delete scores.S;
+  }
+  // U vs R: by tip distance
+  if(scores.U&&scores.R){
+    if(tipsDist_IM<0.22) delete scores.U; else delete scores.R;
+  }
+  // U vs H: U is vertical, H is horizontal
+  if(scores.U&&scores.H){
+    const vertical=Math.abs(lm[8].y-lm[5].y)>palmSize*0.2;
+    if(vertical) delete scores.H; else delete scores.U;
+  }
+  // V vs U: tip spread
+  if(scores.V&&scores.U) delete scores.U; // V has higher threshold already
+  // D vs Z: thumb contact
+  if(scores.D&&scores.Z) delete scores.Z;
+  // G vs Q: direction
+  if(scores.G&&scores.Q) delete scores.Q;
+  // K vs P: direction
+  if(scores.K&&scores.P) delete scores.P;
+  // L vs D: thumb out vs thumb makes circle
+  if(scores.L&&scores.D) { if(thumbIndexTip<0.45) delete scores.L; else delete scores.D; }
+  // I vs Y: pinky only vs pinky+thumb
+  if(scores.I&&scores.Y) delete scores.I;
+  // O vs C: O has fingertips meeting thumb, C is more open
+  if(scores.O&&scores.C) { if(thumbIndexTip<0.38) delete scores.C; else delete scores.O; }
+  // M vs E vs S: all curled variants
+  if(scores.M||scores.E||scores.S||scores.A||scores.N||scores.T){
+    // Use thumb position to differentiate:
+    // E: thumb tucked, tips curled close to palm
+    // S: thumb over curled fingers
+    // A: thumb to side of fist
+    // M: 3 fingers over thumb
+    // N: 2 fingers over thumb  
+    // T: thumb between index and middle
+    const tipsToPalm=normDist(8,0);
+    if(scores.M&&scores.N){ if(normDist(4,6)<0.45) delete scores.N; else delete scores.M; }
+    if(scores.E&&scores.S){ if(thumbTucked&&normDist(4,7)<0.55) delete scores.E; else delete scores.S; }
+  }
+
+  // Find best score
+  let best=null,bestScore=0;
+  Object.entries(scores).forEach(([k,v])=>{ if(v>bestScore){best=k;bestScore=v;} });
+  if(best&&bestScore>=0.68) return{label:best,conf:bestScore};
+  return null;
+}
+function stabilize(buf){
+  if(buf.length<BUF/2)return null;
+  const c={};buf.forEach(s=>{if(s)c[s]=(c[s]||0)+1;});
+  let best=null,bv=0;
+  Object.entries(c).forEach(([k,v])=>{if(v>bv){best=k;bv=v;}});
+  return bv>=BUF*.55?best:null;
+}
+
+// ═══════════════════════════════════════
+// COMMUNICATE CAMERA
+// ═══════════════════════════════════════
+async function startCam(){
+  document.getElementById('camPH').style.display='none';
+  document.getElementById('videoEl').style.display='block';
+  document.getElementById('stopBtn').classList.add('show');
+  try{
+    commHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+    commHands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:.6,minTrackingConfidence:.5});
+    commHands.onResults(onCommResults);
+    const v=document.getElementById('videoEl');
+    commCamera=new Camera(v,{onFrame:async()=>{if(commHands)await commHands.send({image:v});},width:640,height:480});
+    await commCamera.start();
+    toast('Camera started ✓','');
+  }catch(e){
+    document.getElementById('camPH').style.display='flex';
+    document.getElementById('videoEl').style.display='none';
+    document.getElementById('stopBtn').classList.remove('show');
+    toast('Camera error: '+e.message,'error');
+  }
+}
+function stopCam(){
+  if(commCamera){commCamera.stop();commCamera=null;}
+  if(commHands){commHands.close();commHands=null;}
+  document.getElementById('videoEl').style.display='none';
+  document.getElementById('camPH').style.display='flex';
+  document.getElementById('stopBtn').classList.remove('show');
+  document.getElementById('detectOverlay').classList.remove('show');
+  ['hCount','hDom','hFing','hConf'].forEach(id=>document.getElementById(id).textContent=id==='hCount'?'0':'—');
+  commBuf=[];lastStable='';
+}
+function onCommResults(res){
+  const cv=document.getElementById('canvasEl'),ctx=cv.getContext('2d');
+  const v=document.getElementById('videoEl');
+  cv.width=v.videoWidth||640;cv.height=v.videoHeight||480;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const now=Date.now();
+  document.getElementById('hFPS').textContent=Math.round(1000/(now-lastT))+' fps';
+  lastT=now;
+  const hc=res.multiHandLandmarks?res.multiHandLandmarks.length:0;
+  document.getElementById('hCount').textContent=hc;
+  if(!hc){commBuf.push(null);if(commBuf.length>BUF)commBuf.shift();return;}
+  for(let i=0;i<res.multiHandLandmarks.length;i++){
+    const lm=res.multiHandLandmarks[i];
+    drawConnectors(ctx,lm,HAND_CONNECTIONS,{color:'rgba(91,79,207,.45)',lineWidth:2});
+    drawLandmarks(ctx,lm,{color:'#5b4fcf',fillColor:'rgba(165,180,252,.55)',lineWidth:1,radius:4});
+    if(i===0){
+      const hand=res.multiHandedness[i]?.label||'';
+      const fc=[lm[8].y<lm[6].y,lm[12].y<lm[10].y,lm[16].y<lm[14].y,lm[20].y<lm[18].y].filter(Boolean).length;
+      document.getElementById('hDom').textContent=hand;
+      document.getElementById('hFing').textContent=fc+'/4';
+      const pred=classify(lm);
+      if(pred){
+        commBuf.push(pred.label);
+        document.getElementById('hConf').textContent=Math.round(pred.conf*100)+'%';
+        const stable=stabilize(commBuf);
+        if(stable){
+          document.getElementById('detectOverlay').classList.add('show');
+          document.getElementById('doSign').textContent=stable;
+          const pct=Math.round(pred.conf*100);
+          document.getElementById('doFill').style.width=pct+'%';
+          document.getElementById('doPct').textContent=pct+'%';
+          if(stable!==lastStable){
+            lastStable=stable;
+            addToSentence(stable);
+            pushChip(stable);
+          }
+        }
+      }else commBuf.push(null);
+    }
+  }
+  if(commBuf.length>BUF)commBuf.shift();
+}
+
+// ═══════════════════════════════════════
+// TRAINING / CORRECTION SYSTEM
+// When user says classifier is wrong, they
+// pick the correct letter. We save the
+// landmark "feature vector" with the correct
+// label. On next detect, we check saved
+// training data FIRST before rule-based.
+// ═══════════════════════════════════════
+let trainingData = JSON.parse(localStorage.getItem('sb_training') || '[]');
+let lastLandmarks = null; // most recent raw landmarks from learn cam
+let currentDetected = null; // what classifier said
+
+function getFeatureVector(lm) {
+  if (!lm || lm.length < 21) return null;
+  const dist = (a, b) => Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2+(a.z-b.z)**2);
+  const palmSize = dist(lm[0], lm[9]) + 0.001;
+  // 15 normalised distances — enough to distinguish hand shapes
+  const features = [
+    dist(lm[4],lm[8])/palmSize,   // thumb-index tip
+    dist(lm[4],lm[12])/palmSize,  // thumb-middle tip
+    dist(lm[4],lm[16])/palmSize,  // thumb-ring tip
+    dist(lm[4],lm[20])/palmSize,  // thumb-pinky tip
+    dist(lm[8],lm[12])/palmSize,  // index-middle tip
+    dist(lm[12],lm[16])/palmSize, // middle-ring tip
+    dist(lm[16],lm[20])/palmSize, // ring-pinky tip
+    (lm[6].y-lm[8].y)/palmSize,   // index extension
+    (lm[10].y-lm[12].y)/palmSize, // middle extension
+    (lm[14].y-lm[16].y)/palmSize, // ring extension
+    (lm[18].y-lm[20].y)/palmSize, // pinky extension
+    dist(lm[5],lm[4])/palmSize,   // thumb-index MCP
+    dist(lm[8],lm[0])/palmSize,   // index tip to wrist
+    dist(lm[20],lm[0])/palmSize,  // pinky tip to wrist
+    Math.abs(lm[8].x-lm[20].x)/palmSize, // lateral spread
+  ];
+  return features;
+}
+
+function cosineSim(a, b) {
+  let dot=0, na=0, nb=0;
+  for (let i=0; i<a.length; i++) { dot+=a[i]*b[i]; na+=a[i]**2; nb+=b[i]**2; }
+  return dot / (Math.sqrt(na)*Math.sqrt(nb)+0.001);
+}
+
+// Check training data first — 1-NN with cosine similarity
+function classifyWithTraining(lm) {
+  const fv = getFeatureVector(lm);
+  if (fv && trainingData.length > 0) {
+    let bestSim = 0.92; // threshold — must be very similar to override
+    let bestLabel = null;
+    for (const sample of trainingData) {
+      const sim = cosineSim(fv, sample.features);
+      if (sim > bestSim) { bestSim = sim; bestLabel = sample.label; }
+    }
+    if (bestLabel) return { label: bestLabel, conf: Math.min(0.97, bestSim), fromTraining: true };
+  }
+  return classify(lm); // fall back to rule-based
+}
+
+function showCorrection() {
+  if (!currentDetected && !lastLandmarks) {
+    toast('Hold a sign in front of the camera first', 'error'); return;
+  }
+  document.getElementById('correctionPanel').style.display = 'block';
+  // Build A-Z grid
+  const trained = trainingData.map(t => t.label);
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  document.getElementById('correctionGrid').innerHTML = letters.map(l =>
+    `<button class="corr-btn${trained.includes(l)?' trained':''}" onclick="saveCorrection('${l}')">${l}</button>`
+  ).join('');
+  document.getElementById('btnWrong').style.display = 'none';
+}
+
+function saveCorrection(correctLabel) {
+  if (!lastLandmarks) { toast('No hand data captured yet', 'error'); return; }
+  const fv = getFeatureVector(lastLandmarks);
+  if (!fv) return;
+  // Save up to 5 samples per letter (keep most recent)
+  const existing = trainingData.filter(t => t.label === correctLabel);
+  if (existing.length >= 5) {
+    // remove oldest for this label
+    const idx = trainingData.findIndex(t => t.label === correctLabel);
+    trainingData.splice(idx, 1);
+  }
+  trainingData.push({ label: correctLabel, features: fv, ts: Date.now() });
+  localStorage.setItem('sb_training', JSON.stringify(trainingData));
+  updateTrainingStats();
+  document.getElementById('correctionPanel').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'none';
+  document.getElementById('btnCorrect').style.display = 'none';
+  // Show it applied
+  document.getElementById('ldbSign').textContent = correctLabel;
+  document.getElementById('ldbName').textContent = '✓ Trained as ' + correctLabel;
+  toast(`✓ Saved! "${correctLabel}" will now be recognised correctly`, '');
+}
+
+function confirmCorrect() {
+  if (!currentDetected || !lastLandmarks) return;
+  saveCorrection(currentDetected);
+  toast(`✓ "${currentDetected}" confirmed and reinforced!`, '');
+}
+
+function clearTraining() {
+  trainingData = [];
+  localStorage.removeItem('sb_training');
+  updateTrainingStats();
+  toast('Training data cleared', 'info');
+}
+
+function updateTrainingStats() {
+  document.getElementById('corrCount').textContent = trainingData.length;
+  const labels = [...new Set(trainingData.map(t => t.label))].sort();
+  document.getElementById('trainedLetters').textContent = labels.length ? labels.join(' ') : '—';
+  // Update trained markers on correction grid if open
+  const grid = document.getElementById('correctionGrid');
+  if (grid.children.length) {
+    [...grid.children].forEach(btn => {
+      btn.className = 'corr-btn' + (labels.includes(btn.textContent) ? ' trained' : '');
+    });
+  }
+}
+
+// ═══════════════════════════════════════
+// LEARN CAMERA
+// ═══════════════════════════════════════
+let learnBuf=[], learnLastStable='';
+async function startLearnCam(){
+  document.getElementById('learnCamPH').style.display='none';
+  document.getElementById('learnVideo').style.display='block';
+  document.getElementById('learnStopBtn').style.display='flex';
+  try{
+    learnHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+    learnHands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.6,minTrackingConfidence:.5});
+    learnHands.onResults(onLearnResults);
+    const v=document.getElementById('learnVideo');
+    learnCamera=new Camera(v,{onFrame:async()=>{if(learnHands)await learnHands.send({image:v});},width:480,height:360});
+    await learnCamera.start();
+  }catch(e){
+    document.getElementById('learnCamPH').style.display='flex';
+    document.getElementById('learnVideo').style.display='none';
+    toast('Camera error: '+e.message,'error');
+  }
+}
+function stopLearnCam(){
+  if(learnCamera){learnCamera.stop();learnCamera=null;}
+  if(learnHands){learnHands.close();learnHands=null;}
+  document.getElementById('learnVideo').style.display='none';
+  document.getElementById('learnCamPH').style.display='flex';
+  document.getElementById('learnStopBtn').style.display='none';
+  learnBuf=[];learnLastStable='';
+  document.getElementById('ldbSign').textContent='—';
+  document.getElementById('ldbName').textContent='Show a sign to the camera';
+  document.getElementById('ldbFill').style.width='0%';
+  document.getElementById('ldbPct').textContent='0%';
+}
+function onLearnResults(res){
+  const cv=document.getElementById('learnCanvas'),ctx=cv.getContext('2d');
+  const v=document.getElementById('learnVideo');
+  cv.width=v.videoWidth||480;cv.height=v.videoHeight||360;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  if(!res.multiHandLandmarks?.length){
+    // Hide feedback buttons when no hand visible
+    document.getElementById('btnWrong').style.display='none';
+    document.getElementById('btnCorrect').style.display='none';
+    return;
+  }
+  const lm=res.multiHandLandmarks[0];
+  lastLandmarks=lm; // save for training
+  drawConnectors(ctx,lm,HAND_CONNECTIONS,{color:'rgba(91,79,207,.5)',lineWidth:2});
+  drawLandmarks(ctx,lm,{color:'#5b4fcf',fillColor:'rgba(165,180,252,.6)',lineWidth:1,radius:4});
+  // Use training-enhanced classifier
+  const pred=classifyWithTraining(lm);
+  if(pred){
+    learnBuf.push(pred.label);
+    const stable=stabilize(learnBuf);
+    if(stable){
+      currentDetected=stable;
+      document.getElementById('ldbSign').textContent=stable;
+      const lesson=LESSONS.find(l=>l.sign===stable&&l.category==='Alphabet')||LESSONS.find(l=>l.sign===stable);
+      const fromTrain=pred.fromTraining?' 🧠 (trained)':'';
+      document.getElementById('ldbName').textContent=(lesson?lesson.title:'Sign detected')+fromTrain;
+      const pct=Math.round(pred.conf*100);
+      document.getElementById('ldbFill').style.width=pct+'%';
+      document.getElementById('ldbPct').textContent=pct+'%';
+      // Show feedback buttons
+      document.getElementById('btnWrong').style.display='flex';
+      document.getElementById('btnCorrect').style.display='flex';
+      document.getElementById('correctionPanel').style.display='none';
+    }
+  }else{
+    learnBuf.push(null);
+    currentDetected=null;
+    document.getElementById('btnWrong').style.display='none';
+    document.getElementById('btnCorrect').style.display='none';
+  }
+  if(learnBuf.length>BUF)learnBuf.shift();
+}
+
+// ═══════════════════════════════════════
+// SENTENCE BUILDER
+// ═══════════════════════════════════════
+function addToSentence(s){
+  sentence+=s;
+  renderSentence();
+}
+function sbSpace(){sentence+=' ';renderSentence();}
+function sbBack(){if(sentence.length)sentence=sentence.slice(0,-1);renderSentence();}
+function sbClear(){sentence='';lastStable='';renderSentence();}
+function renderSentence(){document.getElementById('sbText').textContent=sentence;}
+
+function speakSentence(){
+  const text=sentence.trim();
+  if(!text){toast('Nothing to speak yet','error');return;}
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.9;u.pitch=1;
+  speechSynthesis.speak(u);
+  toast('Speaking: "'+text.slice(0,30)+(text.length>30?'…':'')+'"','');
+}
+
+function saveSentence(){
+  const text=sentence.trim();
+  if(!text){toast('Nothing to save','error');return;}
+  const entry={sign:'[sentence]',sentence:text,time:new Date().toLocaleTimeString()};
+  historyLog.unshift(entry);
+  localStorage.setItem('sb_hist',JSON.stringify(historyLog));
+  renderHistory();
+  toast('Saved to history ✓','');
+}
+
+// ═══════════════════════════════════════
+// GESTURE STREAM
+// ═══════════════════════════════════════
+function pushChip(s){
+  gestHistory.unshift(s);
+  if(gestHistory.length>24)gestHistory.pop();
+  renderChips();
+  // auto-save sign to history
+  const entry={sign:s,sentence:sentence.trim(),time:new Date().toLocaleTimeString()};
+  historyLog.unshift(entry);
+  if(historyLog.length>200)historyLog.pop();
+  localStorage.setItem('sb_hist',JSON.stringify(historyLog));
+}
+function renderChips(){
+  const empty=document.getElementById('gsEmpty');
+  const chips=document.getElementById('gsChips');
+  if(!gestHistory.length){empty.style.display='flex';chips.style.display='none';return;}
+  empty.style.display='none';chips.style.display='flex';
+  chips.innerHTML=gestHistory.map(s=>
+    `<div class="chip"><div class="chip-dot"></div>${s}<span class="chip-v">Verified</span></div>`
+  ).join('');
+}
+function clearStream(){gestHistory=[];renderChips();}
+
+// ═══════════════════════════════════════
+// AI SENTENCE FORMATION
+// ═══════════════════════════════════════
+async function formSentence(){
+  if(!gestHistory.length){toast('Sign some letters first','error');return;}
+  const btn=document.getElementById('formBtn');
+  btn.className='form-btn loading';btn.textContent='Processing…';
+  const signs=[...gestHistory].reverse().join(' ');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:200,
+        system:'You are a sign language interpreter assistant. The user gives you a sequence of ASL signs/letters detected by a camera. Form a natural, fluent English sentence or phrase from them. If it looks like fingerspelling, reconstruct the word. Respond ONLY with the interpreted sentence — no explanation, no preamble.',
+        messages:[{role:'user',content:`ASL signs detected in order: ${signs}`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||"I'm having trouble translating that. Please try signing again.";
+    document.getElementById('aiSentence').textContent='"'+text+'"';
+    document.getElementById('aiTrans').classList.add('show');
+    sentence=text;renderSentence();
+    const entry={sign:'[AI]',sentence:text,time:new Date().toLocaleTimeString()};
+    historyLog.unshift(entry);localStorage.setItem('sb_hist',JSON.stringify(historyLog));
+  }catch{
+    document.getElementById('aiSentence').textContent='"Could not connect. Please try again."';
+    document.getElementById('aiTrans').classList.add('show');
+  }
+  btn.className='form-btn';btn.innerHTML='◈ Form Sentence with AI';
+}
+function closeAI(){document.getElementById('aiTrans').classList.remove('show');}
+
+// ═══════════════════════════════════════
+// TRANSLATION (MyMemory free API)
+// ═══════════════════════════════════════
+async function translateText(){
+  const text=sentence.trim();
+  if(!text){toast('Build a sentence first','error');return;}
+  const lang=document.getElementById('transLang').value;
+  const el=document.getElementById('transResult');
+  el.textContent='Translating…';
+  try{
+    const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${lang}`;
+    const res=await fetch(url);
+    const data=await res.json();
+    el.textContent=data.responseData?.translatedText||'Translation failed';
+    toast('Translated! 🌐','');
+  }catch{
+    el.textContent='Translation unavailable. Check connection.';
+  }
+}
+
+// ═══════════════════════════════════════
+// HISTORY & CSV EXPORT
+// ═══════════════════════════════════════
+function renderHistory(){
+  const table=document.getElementById('historyTable');
+  const empty=document.getElementById('histEmpty');
+  if(!historyLog.length){
+    if(empty)empty.style.display='block';
+    // remove old rows
+    [...table.querySelectorAll('.ht-row')].forEach(r=>r.remove());
+    return;
+  }
+  if(empty)empty.style.display='none';
+  [...table.querySelectorAll('.ht-row')].forEach(r=>r.remove());
+  historyLog.slice(0,50).forEach(entry=>{
+    const row=document.createElement('div');row.className='ht-row';
+    row.innerHTML=`
+      <div class="ht-cell sign">${entry.sign}</div>
+      <div class="ht-cell">${entry.sentence||'—'}</div>
+      <div class="ht-cell">${entry.time}</div>
+      <div class="ht-cell speak-btn"><button onclick="speakText('${(entry.sentence||entry.sign).replace(/'/g,'')}')">🔊 Speak</button></div>`;
+    table.appendChild(row);
+  });
+}
+function speakText(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.9;speechSynthesis.speak(u);
+}
+function clearHistory(){
+  historyLog=[];localStorage.setItem('sb_hist',JSON.stringify([]));
+  renderHistory();toast('History cleared','');
+}
+function exportCSV(){
+  if(!historyLog.length){toast('No history to export','error');return;}
+  let csv='Sign/Text,Sentence,Time\n';
+  historyLog.forEach(e=>{csv+=`"${e.sign}","${e.sentence||''}","${e.time}"\n`;});
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`SignBridge_History_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`;
+  a.click();
+  toast('CSV downloaded ✓','');
+}
+
+// ═══════════════════════════════════════
+// EMERGENCY
+// ═══════════════════════════════════════
+function openEmergency(){document.getElementById('emergModal').classList.add('open');}
+function closeEmerg(e){
+  if(!e||e.target===document.getElementById('emergModal'))
+    document.getElementById('emergModal').classList.remove('open');
+}
+function emergSpeak(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.85;u.volume=1;u.pitch=1.1;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+  toast('🚨 Alert spoken!','');
+  document.getElementById('emergModal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════
+function toggleTheme(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'');
+  document.getElementById('themeBtn').textContent=isDark?'☀️':'🌙';
+  localStorage.setItem('sb_theme',isDark?'dark':'light');
+}
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
+function nav(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(x=>{
+    const t=x.textContent.trim().toLowerCase().replace(/[^a-z]/g,'');
+    if(t.startsWith(p.slice(0,4)))x.classList.add('active');
+  });
+  if(p==='learn')renderLearn();
+  if(p==='history')renderHistory();
+}
+
+// ═══════════════════════════════════════
+// ASL HAND SVG ILLUSTRATIONS
+// Hand shapes drawn as SVG paths per letter
+// Using a consistent 80x80 viewBox
+// ═══════════════════════════════════════
+const ASL_SVG = {
+  // Each value is an inline SVG string (80x80 viewBox)
+  // Hand colour: #f0c8a0 (skin), knuckle lines in #c8865a
+  A: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="30" width="24" height="32" rx="5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="20" y="28" width="12" height="8" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <ellipse cx="40" cy="62" rx="12" ry="5" fill="#f0c8a0"/>
+    <ellipse cx="34" cy="35" rx="5" ry="4" fill="#f5d5b0" stroke="#c8865a" stroke-width="1"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">A</text>
+  </svg>`,
+  B: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="29" y="15" width="8" height="32" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="39" y="15" width="8" height="32" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="19" y="18" width="8" height="30" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="49" y="15" width="8" height="32" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="19" y="44" width="38" height="16" rx="5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="19" y="44" width="12" height="10" rx="3" fill="#e8a870" stroke="#c8865a" stroke-width="1"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">B</text>
+  </svg>`,
+  C: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <path d="M55 20 Q62 30 62 45 Q62 58 52 64" stroke="#f0c8a0" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M55 20 Q62 30 62 45 Q62 58 52 64" stroke="#c8865a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M45 18 Q22 18 20 40 Q18 58 36 66" stroke="#c8865a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <text x="40" y="77" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">C</text>
+  </svg>`,
+  D: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="35" y="12" width="9" height="30" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M44 40 Q60 44 58 58 Q54 64 44 62" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M28 44 Q24 50 28 58 Q32 64 44 62" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <ellipse cx="36" cy="43" rx="8" ry="5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.2"/>
+    <circle cx="30" cy="52" r="5" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">D</text>
+  </svg>`,
+  E: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="30" width="36" height="26" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M25 30 Q30 22 35 28" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M32 28 Q37 18 42 26" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M39 26 Q44 19 49 27" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M46 27 Q50 22 54 30" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <rect x="20" y="44" width="12" height="8" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">E</text>
+  </svg>`,
+  F: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="38" y="14" width="8" height="28" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="48" y="14" width="8" height="28" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="28" y="14" width="8" height="28" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <circle cx="30" cy="50" r="7" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <circle cx="44" cy="50" r="7" fill="#e8a870" stroke="#c8865a" stroke-width="1.5"/>
+    <line x1="37" y1="50" x2="37" y2="50" stroke="#c8865a" stroke-width="2" stroke-linecap="round"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">F</text>
+  </svg>`,
+  G: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="34" width="30" height="10" rx="5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="18" y="36" width="12" height="8" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="42" width="24" height="16" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">G</text>
+  </svg>`,
+  H: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="34" width="36" height="9" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="44" width="36" height="9" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="30" y="52" width="20" height="14" rx="5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="18" y="38" width="10" height="8" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">H</text>
+  </svg>`,
+  I: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="32" width="36" height="26" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="48" y="14" width="9" height="22" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">I</text>
+  </svg>`,
+  J: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="32" width="36" height="26" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="48" y="14" width="9" height="22" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M57 32 Q65 38 62 46 Q60 52 52 52" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="3,2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">J ↙</text>
+  </svg>`,
+  K: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="29" y="14" width="9" height="30" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="41" y="14" width="9" height="30" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="40" width="36" height="18" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="26" y="36" width="12" height="10" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">K</text>
+  </svg>`,
+  L: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="35" y="12" width="9" height="34" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="40" width="28" height="9" rx="4.5" fill="#e8a870" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="26" y="44" width="28" height="18" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">L</text>
+  </svg>`,
+  M: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="36" width="40" height="22" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M26 36 Q28 26 33 32" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M33 32 Q36 22 41 30" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M41 30 Q44 22 49 30" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <rect x="18" y="42" width="12" height="8" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">M</text>
+  </svg>`,
+  N: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="36" width="40" height="22" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M28 36 Q30 24 36 32" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M36 32 Q39 22 45 30" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <rect x="18" y="42" width="12" height="8" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">N</text>
+  </svg>`,
+  O: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="40" cy="38" rx="18" ry="20" fill="none" stroke="#f0c8a0" stroke-width="12" stroke-linecap="round"/>
+    <ellipse cx="40" cy="38" rx="18" ry="20" fill="none" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">O</text>
+  </svg>`,
+  P: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="40" width="9" height="26" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(25 34 53)"/>
+    <rect x="41" y="40" width="9" height="26" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(25 46 53)"/>
+    <rect x="22" y="22" width="36" height="20" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="34" width="12" height="10" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="77" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">P</text>
+  </svg>`,
+  Q: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="35" y="38" width="9" height="26" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="22" width="36" height="20" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="20" y="30" width="14" height="9" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="77" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">Q</text>
+  </svg>`,
+  R: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="33" y="14" width="9" height="32" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(-5 37 30)"/>
+    <rect x="40" y="14" width="9" height="32" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(5 44 30)"/>
+    <rect x="22" y="42" width="36" height="16" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">R</text>
+  </svg>`,
+  S: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="32" width="36" height="26" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M22 36 Q28 26 36 30 Q44 28 52 30 Q56 32 54 36" stroke="#c8865a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <rect x="18" y="34" width="14" height="8" rx="4" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">S</text>
+  </svg>`,
+  T: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="32" width="36" height="26" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="35" y="40" width="10" height="10" rx="3" fill="#e8a870" stroke="#c8865a" stroke-width="1.2"/>
+    <path d="M28 32 Q32 22 38 30" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">T</text>
+  </svg>`,
+  U: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="32" y="14" width="8" height="30" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="40" y="14" width="8" height="30" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="22" y="40" width="36" height="18" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">U</text>
+  </svg>`,
+  V: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="14" width="8" height="30" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(-10 32 29)"/>
+    <rect x="44" y="14" width="8" height="30" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(10 48 29)"/>
+    <rect x="22" y="40" width="36" height="18" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">V ✌</text>
+  </svg>`,
+  W: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="24" y="14" width="8" height="28" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(-8 28 28)"/>
+    <rect x="36" y="12" width="8" height="30" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="48" y="14" width="8" height="28" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5" transform="rotate(8 52 28)"/>
+    <rect x="20" y="40" width="40" height="18" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">W</text>
+  </svg>`,
+  X: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <path d="M36 28 Q42 22 44 30 Q46 36 38 40" stroke="#f0c8a0" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M36 28 Q42 22 44 30 Q46 36 38 40" stroke="#c8865a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <rect x="22" y="44" width="36" height="16" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">X</text>
+  </svg>`,
+  Y: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="32" width="36" height="22" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="48" y="16" width="9" height="20" rx="4.5" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="18" y="34" width="14" height="9" rx="4.5" fill="#e8a870" stroke="#c8865a" stroke-width="1.5"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">Y 🤟</text>
+  </svg>`,
+  Z: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="36" width="36" height="20" rx="6" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <rect x="36" y="16" width="8" height="24" rx="4" fill="#f0c8a0" stroke="#c8865a" stroke-width="1.5"/>
+    <path d="M28 20 L52 20 L28 36 L52 36" stroke="#c8865a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,2"/>
+    <text x="40" y="76" text-anchor="middle" font-size="9" fill="#c8865a" font-family="serif" font-weight="bold">Z ↗↙</text>
+  </svg>`,
+};
+
+// Fallback for numbers and non-alphabet
+function getLessonImg(lesson){
+  if(ASL_SVG[lesson.sign]) return ASL_SVG[lesson.sign];
+  return `<div style="font-size:2.4rem;line-height:1;color:var(--purple);font-weight:900">${lesson.sign}</div>`;
+}
+
+// ═══════════════════════════════════════
+// LEARN
+// ═══════════════════════════════════════
+function renderLearn(){
+  document.getElementById('catStrip').innerHTML=CATS.map(c=>
+    `<button class="cat-btn${c===activeCat?' active':''}" onclick="setCat('${c}')">${c}</button>`
+  ).join('');
+  const list=activeCat==='All'?LESSONS:LESSONS.filter(l=>l.category===activeCat);
+  document.getElementById('lessonsGrid').innerHTML=list.map(l=>{
+    const hasSvg=ASL_SVG[l.sign];
+    return `<div class="lesson-card${doneLessons.includes(l.id)?' done':''}" onclick="openLesson('${l.id}')">
+      <div class="lesson-img">${hasSvg?ASL_SVG[l.sign]:`<span class="lesson-glyph">${l.sign}</span>`}</div>
+      <div class="lesson-title">${l.title}</div>
+      <div class="lesson-xp">+${l.xp} XP</div>
+      <div class="lesson-diff">${l.difficulty}</div>
+    </div>`;
+  }).join('');
+}
+function setCat(c){activeCat=c;renderLearn();}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function openLesson(id){
+  curLesson=LESSONS.find(l=>l.id===id);if(!curLesson)return;
+  // Show SVG hand image if available, else fallback to glyph
+  const hasSvg=ASL_SVG[curLesson.sign];
+  document.getElementById('mGlyph').innerHTML=hasSvg
+    ? `<div style="width:110px;height:110px;margin:0 auto">${ASL_SVG[curLesson.sign]}</div>`
+    : `<span style="font-size:4rem;font-family:'JetBrains Mono',monospace;color:var(--purple)">${curLesson.sign}</span>`;
+  document.getElementById('mTitle').textContent=curLesson.title;
+  document.getElementById('mDesc').textContent=curLesson.description;
+  document.getElementById('mXp').textContent=curLesson.xp;
+  document.getElementById('mSteps').innerHTML=curLesson.steps.map((s,i)=>
+    `<div class="modal-step"><div class="step-n">${i+1}</div>${s}</div>`).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+function completeLesson(){
+  if(!curLesson)return;
+  if(!doneLessons.includes(curLesson.id)){
+    doneLessons.push(curLesson.id);xp+=curLesson.xp;
+    localStorage.setItem('sb_xp',xp);localStorage.setItem('sb_done',JSON.stringify(doneLessons));
+    updateXP();toast(`+${curLesson.xp} XP earned! 🎉`,'');
+  }
+  document.getElementById('modalOverlay').classList.remove('open');
+  renderLearn();
+}
+function updateXP(){document.getElementById('xpDisplay').textContent=xp+' XP';}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function setMode(m){
+  document.getElementById('btnLive').className='mode-pill '+(m==='live'?'on':'off');
+  document.getElementById('btnTrain').className='mode-pill '+(m==='train'?'on':'off');
+}
+document.getElementById('btnLive').addEventListener('click',()=>setMode('live'));
+
+// INIT
+updateXP();
+renderLearn();
+renderHistory();
+updateTrainingStats();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeEmerg();}});
+</script>
+</body>
+</html>
