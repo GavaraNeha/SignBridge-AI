@@ -107,13 +107,5 @@ SignBridge AI is a browser-based, AI-powered application that:
 
 ---
 
-## 🏆 Hackathon Submission
-
-- **Event:** FlowZint AI Hackathon 2026
-- **Track:** Open Innovation
-- **Category:** AI-Powered Accessibility Tool
-
----
-
 ## 📄 License
 MIT License — free to use and build upon.
